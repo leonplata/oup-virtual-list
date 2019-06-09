@@ -1,4 +1,6 @@
 import {html, PolymerElement} from '@polymer/polymer/polymer-element.js';
+import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
+import {IronResizableBehavior} from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
 import '@polymer/polymer/lib/elements/dom-repeat';
 
 /**
@@ -9,7 +11,7 @@ import '@polymer/polymer/lib/elements/dom-repeat';
  * @polymer
  * @demo demo/index.html
  */
-class OupVirtualListElement extends PolymerElement {
+class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], PolymerElement) {
   static get template() {
     return html`
       <style>
@@ -35,8 +37,8 @@ class OupVirtualListElement extends PolymerElement {
           border: 1px solid red;
         }
       </style>
-      <div class="container" on-scroll="_handleScroll">
-        <div class="placeholder" style$="width: [[placeholderWidth]]px;">
+      <div id="container" class="container" on-scroll="_handleScroll">
+        <div class="placeholder" style$="width: [[placeholderWidth]]px; margin-left: [[negative(widthPerItem)]]px;">
           <template is="dom-repeat" items="[[physicalItems]]">
             <div class="item" style$="width: [[widthPerItem]]px; transform: translate3d([[item.itemOffset]]px, 0, 0);">
               [[item.virtualItem]]
@@ -48,6 +50,7 @@ class OupVirtualListElement extends PolymerElement {
   }
   static get properties() {
     return {
+      width: Number,
       items: {
         type: Array,
         value: Array.from({ length: 100000 }).map((v, k) => 'item ' + k)
@@ -62,7 +65,7 @@ class OupVirtualListElement extends PolymerElement {
       },
       max: {
         type: Number,
-        value: 6
+        computed: '_computeMax(width, widthPerItem)'
       },
       placeholderWidth: {
         type: Number,
@@ -73,6 +76,22 @@ class OupVirtualListElement extends PolymerElement {
         computed: '_computePhysicalItems(items, widthPerItem, scrollOffset, max)'
       }
     };
+  }
+
+  constructor() {
+    super();
+    this._handleIronResize = this._handleIronResize.bind(this);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('iron-resize', this._handleIronResize);
+    this._handleIronResize();
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener('iron-resize', this._handleIronResize);
   }
 
   // [ 1 2 3 4 5 ] _ _ _ _ _ _  |
@@ -137,8 +156,21 @@ class OupVirtualListElement extends PolymerElement {
     return widthPerItem * itemsLength;
   }
 
-  _handleScroll(event) {
-    this.scrollOffset = event.currentTarget.scrollLeft;
+  _handleScroll() {
+    this.scrollOffset = this.$.container.scrollLeft;
+  }
+
+  _handleIronResize() {
+    this.width = this.offsetWidth;
+    this._handleScroll();
+  }
+
+  _computeMax(width, widthPerItem) {
+    return Math.ceil(width / widthPerItem) + widthPerItem;
+  }
+
+  negative(value) {
+    return -value;
   }
 }
 
