@@ -23,9 +23,13 @@
   <body>
     <div class="vertical-section-container">
       <h3>Basic oup-virtual-list demo</h3>
-      <demo-snippet>
+      <demo-snippet id="demo">
         <template>
           <oup-virtual-list></oup-virtual-list>
+          <script>
+            const element = document.querySelector('#demo oup-virtual-list');
+            element.items = Array.from({ length: 10000 }).map((v, k) => k);
+          </script>
         </template>
       </demo-snippet>
     </div>

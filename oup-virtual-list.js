@@ -1,7 +1,7 @@
 import {html, PolymerElement} from '@polymer/polymer/polymer-element.js';
 import {mixinBehaviors} from '@polymer/polymer/lib/legacy/class.js';
 import {IronResizableBehavior} from '@polymer/iron-resizable-behavior/iron-resizable-behavior.js';
-import '@polymer/polymer/lib/elements/dom-repeat';
+import '@polymer/polymer/lib/elements/dom-repeat.js';
 
 /**
  * `oup-virtual-list`
@@ -11,7 +11,7 @@ import '@polymer/polymer/lib/elements/dom-repeat';
  * @polymer
  * @demo demo/index.html
  */
-class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], PolymerElement) {
+export class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], PolymerElement) {
   static get template() {
     return html`
       <style>
@@ -20,41 +20,53 @@ class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], Poly
         }
         .container {
           width: 100%;
-          height: 200px;
-          background: silver;
           overflow-x: auto;
         }
         .placeholder {
-          height: 200px;
           position: relative;
         }
         .item {
           position: absolute;
           top: 0;
-          height: 200px;
-          box-sizing: border-box;
-          border: 1px solid red;
         }
       </style>
-      <div id="container" class="container" on-scroll="_handleScroll">
-        <div class="placeholder" style$="width: [[placeholderWidth]]px;">
-          <template is="dom-repeat" items="[[physicalItems]]">
-            <div class="item" style$="width: [[widthPerItem]]px; transform: translate3d([[item.itemOffset]]px, 0, 0);">
-              [[item.virtualItem]]
+      <div
+          id="container"
+          class="container"
+          style$="height: [[heightPerItem]]px;"
+          on-scroll="_handleScroll">
+        <div
+            class="placeholder"
+            style$="width: [[placeholderWidth]]px; height: [[heightPerItem]]px;">
+          <template
+              is="dom-repeat"
+              items="[[physicalItems]]">
+            <div
+                class="item"
+                style$="width: [[widthPerItem]]px; height: [[heightPerItem]]px; transform: translate3d([[item.itemOffset]]px, 0, 0);">
+              ${this.itemTemplate}
             </div>
           </template>
         </div>
       </div>
     `;
   }
+
+  static get itemTemplate() {
+    return html`
+      [[item.virtualItem]]
+    `;
+  }
+
   static get properties() {
     return {
       width: Number,
-      items: {
-        type: Array,
-        value: Array.from({ length: 100 }).map((v, k) => 'item ' + k)
-      },
+      items: Array,
       widthPerItem: {
+        type: Number,
+        value: 200
+      },
+      heightPerItem: {
         type: Number,
         value: 200
       },
@@ -144,9 +156,10 @@ class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], Poly
     return Math.ceil((offsetIndex - physicalIndex - 1) / max) * max + physicalIndex;
   }
 
-  _computePhysicalItems(items, widthPerItem, scrollOffset, max) {
+  _computePhysicalItems(items = [], widthPerItem, scrollOffset, max) {
     const offsetIndex = Math.ceil(scrollOffset / widthPerItem);
-    return Array.from({ length: max })
+    const length = items.length < max ? items.length : max;
+    return Array.from({ length })
       .map((v, physicalIndex) => {
         const virtualIndex = this._computeVirtualIndex(physicalIndex, offsetIndex, max);
         const itemOffset = (virtualIndex * widthPerItem);
@@ -171,10 +184,6 @@ class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], Poly
 
   _computeMax(width, widthPerItem) {
     return Math.ceil(width / widthPerItem) + 1;
-  }
-
-  negative(value) {
-    return -value;
   }
 }
 
