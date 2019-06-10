@@ -1,6 +1,7 @@
 {
   "name": "@oup/oup-virtual-list",
   "main": "oup-virtual-list.js",
+  "version": "0.1.0",
   "dependencies": {
     "@polymer/iron-resizable-behavior": "^3.0.1",
     "@polymer/polymer": "^3.0.0"
