@@ -27,7 +27,6 @@ class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], Poly
         .placeholder {
           height: 200px;
           position: relative;
-          margin-left: -200px;
         }
         .item {
           position: absolute;
@@ -38,7 +37,7 @@ class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], Poly
         }
       </style>
       <div id="container" class="container" on-scroll="_handleScroll">
-        <div class="placeholder" style$="width: [[placeholderWidth]]px; margin-left: [[negative(widthPerItem)]]px;">
+        <div class="placeholder" style$="width: [[placeholderWidth]]px;">
           <template is="dom-repeat" items="[[physicalItems]]">
             <div class="item" style$="width: [[widthPerItem]]px; transform: translate3d([[item.itemOffset]]px, 0, 0);">
               [[item.virtualItem]]
@@ -53,7 +52,7 @@ class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], Poly
       width: Number,
       items: {
         type: Array,
-        value: Array.from({ length: 100000 }).map((v, k) => 'item ' + k)
+        value: Array.from({ length: 1000 }).map((v, k) => 'item ' + k)
       },
       widthPerItem: {
         type: Number,
@@ -103,34 +102,37 @@ class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], Poly
   // _ _ _ _ _ _ [ 2 3 4 5 1 ]  |
 
   // f(physical_index: 0, max: 5, offset: 0) = virtual_index:  0
-  // f(physical_index: 0, max: 5, offset: 1) = virtual_index:  5
+  // f(physical_index: 0, max: 5, offset: 1) = virtual_index:  0
   // f(physical_index: 0, max: 5, offset: 2) = virtual_index:  5
   // f(physical_index: 0, max: 5, offset: 3) = virtual_index:  5
   // f(physical_index: 0, max: 5, offset: 4) = virtual_index:  5
   // f(physical_index: 0, max: 5, offset: 5) = virtual_index:  5
-  // f(physical_index: 0, max: 5, offset: 6) = virtual_index: 10
+  // f(physical_index: 0, max: 5, offset: 6) = virtual_index:  5
   // f(physical_index: 0, max: 5, offset: 7) = virtual_index: 10
   // f(physical_index: 0, max: 5, offset: 8) = virtual_index: 10
+  // f(physical_index: 0, max: 5, offset: 9) = virtual_index: 10
 
   // f(physical_index: 1, max: 5, offset: 0) = virtual_index:  1
   // f(physical_index: 1, max: 5, offset: 1) = virtual_index:  1
-  // f(physical_index: 1, max: 5, offset: 2) = virtual_index:  6
+  // f(physical_index: 1, max: 5, offset: 2) = virtual_index:  1
   // f(physical_index: 1, max: 5, offset: 3) = virtual_index:  6
   // f(physical_index: 1, max: 5, offset: 4) = virtual_index:  6
   // f(physical_index: 1, max: 5, offset: 5) = virtual_index:  6
   // f(physical_index: 1, max: 5, offset: 6) = virtual_index:  6
-  // f(physical_index: 1, max: 5, offset: 7) = virtual_index: 11
+  // f(physical_index: 1, max: 5, offset: 7) = virtual_index:  6
   // f(physical_index: 1, max: 5, offset: 8) = virtual_index: 11
+  // f(physical_index: 1, max: 5, offset: 9) = virtual_index: 11
 
   // f(physical_index: 2, max: 5, offset: 0) = virtual_index:  2
   // f(physical_index: 2, max: 5, offset: 1) = virtual_index:  2
   // f(physical_index: 2, max: 5, offset: 2) = virtual_index:  2
-  // f(physical_index: 2, max: 5, offset: 3) = virtual_index:  7
+  // f(physical_index: 2, max: 5, offset: 3) = virtual_index:  2
   // f(physical_index: 2, max: 5, offset: 4) = virtual_index:  7
   // f(physical_index: 2, max: 5, offset: 5) = virtual_index:  7
   // f(physical_index: 2, max: 5, offset: 6) = virtual_index:  7
   // f(physical_index: 2, max: 5, offset: 7) = virtual_index:  7
-  // f(physical_index: 2, max: 5, offset: 8) = virtual_index: 12
+  // f(physical_index: 2, max: 5, offset: 8) = virtual_index:  7
+  // f(physical_index: 2, max: 5, offset: 9) = virtual_index: 12
 
   /**
    * @param {number} physicalIndex
@@ -139,7 +141,7 @@ class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], Poly
    * @returns {number} The virtual index
    */
   _computeVirtualIndex(physicalIndex, offsetIndex, max) {
-    return Math.ceil((offsetIndex - physicalIndex) / max) * max + physicalIndex;
+    return Math.ceil((offsetIndex - physicalIndex - 1) / max) * max + physicalIndex;
   }
 
   _computePhysicalItems(items, widthPerItem, scrollOffset, max) {
@@ -166,7 +168,7 @@ class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], Poly
   }
 
   _computeMax(width, widthPerItem) {
-    return Math.ceil(width / widthPerItem) + widthPerItem;
+    return Math.ceil(width / widthPerItem) + 1;
   }
 
   negative(value) {
