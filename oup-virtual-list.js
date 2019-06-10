@@ -52,7 +52,7 @@ class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], Poly
       width: Number,
       items: {
         type: Array,
-        value: Array.from({ length: 1000 }).map((v, k) => 'item ' + k)
+        value: Array.from({ length: 100 }).map((v, k) => 'item ' + k)
       },
       widthPerItem: {
         type: Number,
@@ -146,12 +146,14 @@ class OupVirtualListElement extends mixinBehaviors([IronResizableBehavior], Poly
 
   _computePhysicalItems(items, widthPerItem, scrollOffset, max) {
     const offsetIndex = Math.ceil(scrollOffset / widthPerItem);
-    return Array.from({ length: max }).map((v, physicalIndex) => {
-      const virtualIndex = this._computeVirtualIndex(physicalIndex, offsetIndex, max);
-      const itemOffset = (virtualIndex * widthPerItem);
-      const virtualItem = items[virtualIndex];
-      return { itemOffset, virtualItem };
-    });
+    return Array.from({ length: max })
+      .map((v, physicalIndex) => {
+        const virtualIndex = this._computeVirtualIndex(physicalIndex, offsetIndex, max);
+        const itemOffset = (virtualIndex * widthPerItem);
+        const virtualItem = items[virtualIndex];
+        return { itemOffset, virtualItem };
+      })
+      .filter(item => item.virtualItem);
   }
 
   _computePlaceholderWidth(widthPerItem, itemsLength) {
